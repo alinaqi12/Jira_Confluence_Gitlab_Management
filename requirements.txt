@@ -1,0 +1,7 @@
+pystray
+atlassian-python-api
+pywin32
+requests
+pillow
+jira
+email-listener
