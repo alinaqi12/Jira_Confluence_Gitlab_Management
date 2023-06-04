@@ -1,13 +1,16 @@
 import win32com.client
 import pythoncom
+from concurrent.futures import ThreadPoolExecutor
+import subprocess
+import argparse
+#from popup import Display_popup
 import threading
-from queue import Queue
 
-from popup import Display_popup
-
-# Define event handlers
-queue = Queue()
-
+def run_script(arg1,arg2):
+    cmd = ["python", "popup.py",arg1,arg2]
+    subprocess.call(cmd)
+def task2(arg1, arg2):
+    threading.Thread(target=run_script, args=(arg1, arg2)).start()
 class OutlookHandler:
     def __init__(self):
         self.inbox = None
@@ -16,20 +19,14 @@ class OutlookHandler:
         if item.UnRead:
             Subject = str(item.Subject)
             Body= str(item.Body)
-            def task2():
-                Display_popup(Subject, Body)
-            queue.put((Subject, Body))
-
             print("Hello, new unread mail received!")
             print("Subject:", Subject)
             print("Body:", Body)
-
-            # Start a new thread to display the popup
-            thread2 = threading.Thread(target=Display_popup, name="Thread 2", args=(queue,))
-            thread2.start()
+            item.UnRead = False
+            task2(Subject, Body)
 
             print("Popup displayed")
-            item.UnRead = False  # Mark the item as read
+              # Mark the item as read
 
     def ProcessInbox(self):
         if self.inbox:

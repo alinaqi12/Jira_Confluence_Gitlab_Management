@@ -1,14 +1,22 @@
 import requests
 from requests.auth import HTTPBasicAuth
 import json
+from dotenv import load_dotenv
+load_dotenv()
+import os
+import keyring
 
+YOUR_DOMAIN_NAME=os.getenv("YOUR_DOMAIN_NAME_JIRA")
+username = os.getenv("username_JIRA")
+api_token=keyring.get_password("Confluence",'')
+base_url = f"https://{YOUR_DOMAIN_NAME}.atlassian.net"
+auth = HTTPBasicAuth(username, api_token)
 def get_pages():
-    auth = HTTPBasicAuth("arttechmania@gmail.com", "ATATT3xFfGF0vGeuHzmznOfX0WYkVQ4xeZMpfDL_JZSQ8PS6DtvRMF1Jpx0PUpO752tXh4mPaFOMCRIqZ4_P4IWs96WwaHPREs6zemwNVpR1l6W1-fZBiMlNWVhKQ8oas8tQHlKB96ci8CUTOxeuzFG-BRGs09Q3zwblza8npUpWCTJWN6vsw-g=D7BE4289")
+    auth = HTTPBasicAuth(username,api_token)
 
     # Set the base URL for your Confluence instance
     # confluence_base_url = 'https://your-confluence-instance.atlassian.net'
-    base_url = 'https://artechmania.atlassian.net'
-
+    
 
     # Get the current space id
     # Chanage according to requirement

@@ -1,60 +1,19 @@
 import requests
 from requests.auth import HTTPBasicAuth
 import json
+from dotenv import load_dotenv
+load_dotenv()
+import os
 import get_pages as gp
+import keyring
 
+YOUR_DOMAIN_NAME=os.getenv("YOUR_DOMAIN_NAME_JIRA")
+username = os.getenv("username_JIRA")
+api_token=keyring.get_password("Confluence",'')
+base_url = f"https://{YOUR_DOMAIN_NAME}.atlassian.net"
+auth = HTTPBasicAuth(username, api_token)
 
-def create_conf_page():
-    # credentials
-    base_url = "https://artechmania.atlassian.net"
-
-    auth = HTTPBasicAuth("arttechmania@gmail.com", "ATATT3xFfGF0vGeuHzmznOfX0WYkVQ4xeZMpfDL_JZSQ8PS6DtvRMF1Jpx0PUpO752tXh4mPaFOMCRIqZ4_P4IWs96WwaHPREs6zemwNVpR1l6W1-fZBiMlNWVhKQ8oas8tQHlKB96ci8CUTOxeuzFG-BRGs09Q3zwblza8npUpWCTJWN6vsw-g=D7BE4289")
-
-    # Get the current space id
-    # Chanage according to requirement
-    conf_url = f'{base_url}/wiki/api/v2/spaces'
-    response = requests.get(conf_url, auth=auth)
-    spaceID = response.json()['results'][1]['id']
-    print(spaceID)
-
-
-
-    # url = "https://artechmania.atlassian.net/wiki/api/v2/pages"
-    url = f'{base_url}/wiki/api/v2/pages'
-    headers = {
-    "Accept": "application/json",
-    "Content-Type": "application/json"
-    }
-
-    payload = json.dumps( {
-        #  space id get from space using rest api
-    "spaceId": spaceID,
-    "status": "current",
-    "title": "This page is using python code on vscode made by iname",
-    
-    "body": {
-        "representation": "storage",
-        # Here we write anything to write in page 
-        "value": "ok hogya g ali bhai masti na kr"
-    }
-    } )
-
-    response = requests.request(
-    "POST",
-    url,
-    data=payload,
-    headers=headers,
-    auth=auth
-    )
-    # print(json.dumps(json.loads(response.text), sort_keys=True, indent=4, separators=(",", ": ")))
-    print(response.status_code)
-
-
-def jira_on_conf():
-
-    auth = HTTPBasicAuth("arttechmania@gmail.com", "ATATT3xFfGF0vGeuHzmznOfX0WYkVQ4xeZMpfDL_JZSQ8PS6DtvRMF1Jpx0PUpO752tXh4mPaFOMCRIqZ4_P4IWs96WwaHPREs6zemwNVpR1l6W1-fZBiMlNWVhKQ8oas8tQHlKB96ci8CUTOxeuzFG-BRGs09Q3zwblza8npUpWCTJWN6vsw-g=D7BE4289")
-
-    base_url = 'https://artechmania.atlassian.net'
+def jira_on_conf(subject,body):
 
     # Set the page ID for the Confluence page you want to link from 
     #this one is hard coded
@@ -62,7 +21,7 @@ def jira_on_conf():
 
     # Set the URL for the Jira issue you want to link to
     # jira_issue_url = 'https://your-jira-instance.atlassian.net/browse/ABC-123'
-    jira_issue_url = 'https://artechmania.atlassian.net/browse/TECH-3'
+    jira_issue_url = f'https://{YOUR_DOMAIN_NAME}.atlassian.net/browse/TECH-3'
 
     # Get the current page version
     url = f'{base_url}/wiki/rest/api/content/{page_id}'
@@ -79,12 +38,12 @@ def jira_on_conf():
         },
         'body': {
             'storage': {
-                'value': f'<p><a href="{jira_issue_url}">Jira Issue</a></p>',
+                'value': f'<p><a href="{jira_issue_url}">Jira Issue</a></br>Description: {body}</p>',
                 'representation': 'storage'
             }
         },
         "type": "page",
-        "title": "This page is using python code on vscode made by iname"
+        "title": subject
     }
     response = requests.put(url, auth=auth, headers=headers, json=data)
     print(response.status_code)
@@ -93,6 +52,52 @@ def jira_on_conf():
         print('Web link created successfully')
     else:
         print(f'Error creating web link: {response.text}')
+
+
+def create_conf_page(subject,body):
+    # credentials
+
+    # Get the current space id
+    # Chanage according to requirement
+    conf_url = f'{base_url}/wiki/api/v2/spaces'
+    response = requests.get(conf_url, auth=auth)
+    spaceID = response.json()['results'][1]['id']
+    print("Found Space: ",spaceID)
+
+
+
+    # url = "https://artechmania.atlassian.net/wiki/api/v2/pages"
+    url = f'{base_url}/wiki/api/v2/pages'
+    headers = {
+    "Accept": "application/json",
+    "Content-Type": "application/json"
+    }
+
+    payload = json.dumps( {
+        #  space id get from space using rest api
+    "spaceId": spaceID,
+    "status": "current",
+    "title": subject,
+    
+    "body": {
+        "representation": "storage",
+        # Here we write anything to write in page 
+        "value": body
+    }
+    } )
+
+    response = requests.request(
+    "POST",
+    url,
+    data=payload,
+    headers=headers,
+    auth=auth
+    )
+    # print(json.dumps(json.loads(response.text), sort_keys=True, indent=4, separators=(",", ": ")))
+    jira_on_conf(subject,body)
+
+    print(response.status_code)
+
 
 
 

@@ -18,6 +18,32 @@ headers = {
     'Content-Type': 'application/json'
     }
 
+import tkinter as tk
+from tkinter import messagebox
+
+# Create a tkinter window
+def warning(message):
+    window = tk.Tk()
+    window.withdraw()
+
+    # Define the warning message
+    warning_message =message
+    # Show the warning message
+    messagebox.showwarning("Warning", warning_message)
+
+    # Define the duration for displaying the warning message (in milliseconds)
+    duration = 5000
+
+    # Function to close the warning message after a certain duration
+    def close_warning():
+        messagebox._show("Warning", warning_message, messagebox.WARNING)
+
+    # Schedule the closing of the warning message after the specified duration
+    window.after(duration, close_warning)
+
+    # Run the tkinter event loop
+    window.mainloop()
+
 def Create_Issue(summary='Default Summary',description='Default Description',issuetype_name=issuetype_Name):
 # Payload for creating a new issue
     payload = {
@@ -34,21 +60,42 @@ def Create_Issue(summary='Default Summary',description='Default Description',iss
         }
     }
     }
+    Res = requests.get(api_url3_GET_ISSUES,headers=headers,auth=(username, api_token))
+    data=Res.json()
+    Res1=data['issues']
+    Temp_Dict=[]
+    issue_key=''
+    for index, item in enumerate(Res1):
+        Key=item['key']
+        id=item['id']
+        summary1=item['fields']['summary']
+        Temp_Dict.append({"Key":Key,'id':id,'summary':summary1})
+        #print(summary)
+        summary.replace(' ','')
+        summary.lower()
+        
+        summary1.replace(' ','')
+        summary1.lower()
+        if summary==summary1:
+            ID=id
+            issue_key=id
+    if issue_key=='':
+        try:
+            # Send a POST request to create a new issue
+            response = requests.post(api_url_ISSUE, auth=(username, api_token), headers=headers, json=payload)
 
-    try:
-        # Send a POST request to create a new issue
-        response = requests.post(api_url_ISSUE, auth=(username, api_token), headers=headers, json=payload)
+            # Check the response status code
+            if response.status_code == 201 :
+                issue_key = response.json().get('key')
+                print('New issue created successfully. Key:', issue_key)
+            else:
+                print('Failed to create issue. Status Code:', response.status_code)
+                print('Response:')
 
-        # Check the response status code
-        if response.status_code == 201 :
-            issue_key = response.json().get('key')
-            print('New issue created successfully. Key:', issue_key)
-        else:
-            print('Failed to create issue. Status Code:', response.status_code)
-            print('Response:')
-
-    except requests.exceptions.RequestException as e:
-        print('An error occurred:', e)
+        except requests.exceptions.RequestException as e:
+            print('An error occurred:', e)
+    else:
+        warning("Issue already exists, kindly use update button! ")
     
 def Update_Issue(summary='Default Summary',description='Default Description'):
     # Payload for creating a new issue

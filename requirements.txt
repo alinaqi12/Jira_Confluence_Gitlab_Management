@@ -5,3 +5,8 @@ requests
 pillow
 jira
 email-listener
+dotenv
+keyring
+tkinter
+threading
+webbrowser
